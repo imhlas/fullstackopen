@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personsService from './services/persons'
 
-const Person = ({ person }) => {
+const Person = ({ person, toggleRemoval }) => {
   return (
-    <div>{person.name} {person.number}</div>
+    <div>
+      {person.name} {person.number}
+      <button onClick={toggleRemoval}>delete</button>
+    </div>
   )
 }
 
@@ -32,35 +35,45 @@ const App = () => {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
+    personsService
+      .getAll()
+        .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }, [])
 
-  console.log('render', persons.length, 'persons')
-
   const addPerson = (event) => {
     event.preventDefault()
-
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to the phonebook!`)
-      return;
-    }
 
     const personObject = {
       name: newName,
       number: newNumber
     }
 
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
-    }
+    const existingPerson = persons.find(person => person.name === newName)
 
+    if (existingPerson) {
+      const confirmUpdate = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)
+  
+      if (confirmUpdate) {
+        personsService
+          .update(existingPerson.id, personObject)
+          .then(returnedPerson => {
+            setPersons(persons.map(p => p.id !== existingPerson.id ? p : returnedPerson))
+            setNewName('')
+            setNewNumber('')
+          })
+      }
+    } else {
+      personsService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+    }
+  }
 
   const handleNameChange = (event) => {
     setNewName(event.target.value)
@@ -78,6 +91,20 @@ const App = () => {
   ? persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
   : persons
 
+  const toggleRemovalof = (id, name) => {
+    console.log(`${name} needs to be deleted`)
+    const person = persons.find(p => p.id === id)
+    const confirmRemoval = window.confirm(`Delete ${person.name}?`)
+
+    if (confirmRemoval) {
+      personsService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(p => p.id !== id));
+        })
+      }
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -89,7 +116,7 @@ const App = () => {
       handleNumberChange={handleNumberChange} handleSubmit={addPerson}/>
       <h2>Numbers</h2>
       {personsToShow.map(person =>
-        <Person key={person.name} person={person} />
+        <Person key={person.name} person={person} toggleRemoval={() => toggleRemovalof(person.id, person.name)} />
         )}
     </div>
   )
