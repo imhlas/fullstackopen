@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react'
 import personsService from './services/persons'
+import Person from './components/Person'
+import PersonForm from './components/PersonForm'
+import './index.css'
 
-const Person = ({ person, toggleRemoval }) => {
-  return (
-    <div>
-      {person.name} {person.number}
-      <button onClick={toggleRemoval}>delete</button>
-    </div>
-  )
-}
 
 const Filter = ({ value, onChange }) => {
   return (
@@ -18,13 +13,27 @@ const Filter = ({ value, onChange }) => {
   )
 }
 
-const PersonForm = ({ newName, newNumber, handleNameChange, handleNumberChange, handleSubmit }) => {
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div>name: <input value={newName} onChange={handleNameChange} /></div>
-      <div>number: <input value={newNumber} onChange={handleNumberChange} /></div>
-      <div><button type="submit">add</button></div>
-    </form>
+    <div className="notification">
+      {message}
+    </div>
+  )
+}
+
+const ErrorNotification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="errornotification">
+      {message}
+    </div>
   )
 }
 
@@ -33,6 +42,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('') 
   const [filter, setFilter] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     personsService
@@ -62,6 +73,16 @@ const App = () => {
             setPersons(persons.map(p => p.id !== existingPerson.id ? p : returnedPerson))
             setNewName('')
             setNewNumber('')
+            setNotificationMessage(`Updated ${newName}`)
+            setTimeout(() => {
+              setNotificationMessage(null)
+            }, 5000)
+          })
+          .catch(error => {
+            setErrorMessage(`Person '${newName}' was already removed from server`)
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           })
       }
     } else {
@@ -71,6 +92,10 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNumber('')
+          setNotificationMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setNotificationMessage(null)
+          }, 5000)
         })
     }
   }
@@ -108,6 +133,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMessage} />
+      <ErrorNotification message={errorMessage} />
       <div>
       <Filter value={filter} onChange={handleFilterChange} />
       </div>
