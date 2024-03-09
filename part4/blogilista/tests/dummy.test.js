@@ -129,3 +129,5 @@ describe('most likes', () => {
     assert.deepStrictEqual(result, null)
   })
 })
+
+module.exports = {blogs}
