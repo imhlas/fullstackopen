@@ -80,18 +80,52 @@ describe('total likes', () => {
 
 describe('favorite blog', () => {
   test('finds the blog with most likes', () => {
-    const result = listHelper.favoriteBlog(blogs);
+    const result = listHelper.favoriteBlog(blogs)
     const expected = {
       title: "Canonical string reduction",
       author: "Edsger W. Dijkstra",
       likes: 12
-    };
+    }
 
-    assert.deepStrictEqual(result, expected);
-  });
+    assert.deepStrictEqual(result, expected)
+  })
 
   test('returns null for empty list', () => {
-    const result = listHelper.favoriteBlog([]);
-    assert.strictEqual(result, null);
+    const result = listHelper.favoriteBlog([])
+    assert.strictEqual(result, null)
   });
+})
+
+describe('most blogs', () => {
+  test('finds the author with most blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+    const expected = {
+      author: "Robert C. Martin",
+      blogs: 3
+    }
+
+    assert.deepStrictEqual(result, expected)
+  })
+
+  test('returns null for empty list', () => {
+    const result = listHelper.mostBlogs([])
+    assert.deepStrictEqual(result, null)
+  })
+})
+
+describe('most likes', () => {
+  test('finds the author with most likes', () => {
+    const result = listHelper.mostLikes(blogs)
+    const expected = {
+      author: "Edsger W. Dijkstra",
+      likes: 17
+    }
+
+    assert.deepStrictEqual(result, expected)
+  })
+
+  test('returns null for empty list', () => {
+    const result = listHelper.mostLikes([])
+    assert.deepStrictEqual(result, null)
+  })
 })
