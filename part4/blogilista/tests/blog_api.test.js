@@ -116,6 +116,44 @@ test('blog without url is not added and responds with status 400', async () => {
     .expect(400) 
 })
 
+test('a blog can be deleted', async () => {
+  const response = await api.get('/api/blogs')
+  const blogToDelete = response.body[0]
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .expect(204)
+
+  const blogsAtEnd = await api.get('/api/blogs')
+
+  assert.strictEqual(blogsAtEnd.body.length, blogs.length - 1)
+
+  const titles = blogsAtEnd.body.map(r => r.title)
+
+  assert(!titles.includes(blogToDelete.title))
+})
+
+test('likes of a blog can be updated', async () => {
+  const blogsAtStart = await api.get('/api/blogs')
+  const blogToUpdate = blogsAtStart.body[0]
+
+  const updatedLikes = blogToUpdate.likes + 1
+  const updatedBlog = {
+    ...blogToUpdate,
+    likes: updatedLikes,
+  }
+
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(updatedBlog)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await api.get('/api/blogs')
+  const updated = blogsAtEnd.body.find(b => b.id === blogToUpdate.id)
+
+  assert.strictEqual(updated.likes, updatedLikes)
+})
 
 after(async () => {
 await mongoose.connection.close()
