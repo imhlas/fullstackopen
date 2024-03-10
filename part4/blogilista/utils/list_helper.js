@@ -41,7 +41,7 @@ const mostBlogs = (blogs) => {
 
 const mostLikes = (blogs) => {
   if (blogs.length === 0) {
-    return null;
+    return null
   }
 
   const authorLikes = blogs.reduce((acc, { author, likes }) => {
