@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
+import LoginForm from './components/LoginForm'
+import Togglable from './components/Togglable'
 
 
 const App = () => {
@@ -13,6 +15,21 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
 
+  const togglableRef = useRef()
+
+  const userInfoStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '20px'
+  }
+
+  const userNameStyle = {
+    marginRight: '10px'
+  }
+
+  const togglableStyle = {
+    marginBottom: '20px'
+  }
 
   useEffect(() => {
     blogService
@@ -68,6 +85,7 @@ const App = () => {
       setTimeout(() => {
         setErrorMessage(null)
       }, 5000)
+      togglableRef.current.toggleVisibility()
     } catch (exception) {
       setErrorMessage({ type: 'error', text: 'Error adding blog' })
       setTimeout(() => {
@@ -82,27 +100,15 @@ if (user === null) {
     <div>
       <h2>Log in to application</h2>
       <Notification message={errorMessage} />
-      <form onSubmit={handleLogin}>
-        <div>
-          username
-            <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
-          password
-            <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type="submit">login</button>
-      </form>
+      <Togglable buttonLabel="login" ref={togglableRef}>
+        <LoginForm
+          username={username}
+          password={password}
+          handleUsernameChange={({ target }) => setUsername(target.value)}
+          handlePasswordChange={({ target }) => setPassword(target.value)}
+          handleSubmit={handleLogin}
+        />
+      </Togglable>
     </div>
   )
 }
@@ -111,8 +117,18 @@ if (user === null) {
     <div>
       <h2>blogs</h2>
       <Notification message={errorMessage} />
-      <p>{user.name} logged-in</p> <button onClick={handleLogout}>logout</button>
-      <BlogForm createBlog={addBlog} />
+
+      <div style={userInfoStyle}>
+        <p style={userNameStyle}>{user.name} logged-in</p>
+        <button onClick={handleLogout}>logout</button>
+      </div>
+
+      <div style={togglableStyle}>
+        <Togglable buttonLabel="create new blog" ref={togglableRef}>
+          <BlogForm createBlog={addBlog} />
+        </Togglable>
+      </div>
+      
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
