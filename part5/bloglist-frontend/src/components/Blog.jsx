@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
-import blogService from '../services/blogs'
+import { useState } from 'react'
 
-const Blog = ({ blog, updateBlogList }) => {
+const Blog = ({ blog, updateBlogList, removeBlog, currentUser }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   const blogStyle = {
@@ -14,11 +13,18 @@ const Blog = ({ blog, updateBlogList }) => {
 
   const handleLike = async () => {
     const updatedBlog = {
-       ...blog,
+      ...blog,
       likes: blog.likes + 1
     }
 
     updateBlogList(blog.id, updatedBlog)
+  }
+
+  const handleRemove = async () => {
+    const confirmRemove = window.confirm(`Remove blog ${blog.title} by ${blog.author}`)
+    if (confirmRemove) {
+      removeBlog(blog.id)
+    }
   }
 
   const toggleDetails = () => {
@@ -39,6 +45,9 @@ const Blog = ({ blog, updateBlogList }) => {
           <p>{blog.url}</p>
           <p>likes {blog.likes} <button onClick={handleLike}>like</button></p>
           <p>{blog.user.name}</p>
+          {currentUser.name === blog.user.name && (
+            <button onClick={handleRemove}>remove</button>
+          )}
         </div>
       )}
     </div>

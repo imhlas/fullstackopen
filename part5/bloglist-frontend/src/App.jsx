@@ -10,8 +10,8 @@ import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('') 
-  const [password, setPassword] = useState('') 
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
 
@@ -33,10 +33,11 @@ const App = () => {
 
   useEffect(() => {
     blogService
-    .getAll()
-    .then(blogs =>
-      setBlogs( blogs )
-    )  
+      .getAll()
+      .then(blogs => {
+        const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
+        setBlogs(sortedBlogs)
+      })
   }, [])
 
   useEffect(() => {
@@ -51,7 +52,6 @@ const App = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault()
-    
     try {
       const user = await loginService.login({
         username, password,
@@ -99,9 +99,14 @@ const App = () => {
       const returnedBlog = await blogService.update(id, updatedBlogData)
       const originalBlog = blogs.find(blog => blog.id === id)
 
-      const updatedBlog = {...returnedBlog, user: originalBlog.user}
-      
-      setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedBlog))
+      const updatedBlog = { ...returnedBlog, user: originalBlog.user }
+
+      const updatedBlogs = blogs
+        .map(blog => blog.id !== id ? blog : updatedBlog)
+        .sort((a, b) => b.likes - a.likes)
+
+      setBlogs(updatedBlogs)
+
     } catch (exception) {
       setErrorMessage({ type: 'error', text: 'Error updating blog' })
       setTimeout(() => {
@@ -111,23 +116,36 @@ const App = () => {
     }
   }
 
-if (user === null) {
-  return (
-    <div>
-      <h2>Log in to application</h2>
-      <Notification message={errorMessage} />
-      <Togglable buttonLabel="login" ref={togglableRef}>
-        <LoginForm
-          username={username}
-          password={password}
-          handleUsernameChange={({ target }) => setUsername(target.value)}
-          handlePasswordChange={({ target }) => setPassword(target.value)}
-          handleSubmit={handleLogin}
-        />
-      </Togglable>
-    </div>
-  )
-}
+  const handleRemove = async (id) => {
+    try {
+      await blogService.remove(id)
+      const updatedBlogs = blogs.filter(blog => blog.id !== id)
+      setBlogs(updatedBlogs)
+    } catch (exception) {
+      setErrorMessage({ type: 'error', text: 'Error removing blog' })
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
+  }
+
+  if (user === null) {
+    return (
+      <div>
+        <h2>Log in to application</h2>
+        <Notification message={errorMessage} />
+        <Togglable buttonLabel="login" ref={togglableRef}>
+          <LoginForm
+            username={username}
+            password={password}
+            handleUsernameChange={({ target }) => setUsername(target.value)}
+            handlePasswordChange={({ target }) => setPassword(target.value)}
+            handleSubmit={handleLogin}
+          />
+        </Togglable>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -144,9 +162,8 @@ if (user === null) {
           <BlogForm createBlog={addBlog} />
         </Togglable>
       </div>
-      
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} updateBlogList={handleLike} />
+        <Blog key={blog.id} blog={blog} updateBlogList={handleLike} removeBlog={handleRemove} currentUser={user} />
       )}
     </div>
   )
