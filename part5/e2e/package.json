@@ -1,0 +1,16 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "Cypress tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cypress:open": "cypress open"
+  },
+  "author": "Iida Lassila",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^13.7.2",
+    "eslint-plugin-cypress": "^2.15.1"
+  }
+}
