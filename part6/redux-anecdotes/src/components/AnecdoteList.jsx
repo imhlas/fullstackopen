@@ -11,6 +11,7 @@ const AnecdoteList = () => {
       anecdote.content.toLowerCase().includes(filter.toLowerCase())
     )
     .sort((a, b) => b.votes - a.votes)
+    
   const vote = (id) => {
     console.log('vote', id)
     dispatch(voteAnecdote(id))
