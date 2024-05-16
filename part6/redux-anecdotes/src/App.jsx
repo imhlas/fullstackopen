@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import AnecdoteForm from './components/AnecdoteForm'
 import AnecdoteList from './components/AnecdoteList'
@@ -10,14 +10,7 @@ const App = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await dispatch(initializeAnecdotes())
-      } catch (error) {
-        console.error('Failed to fetch anecdotes:', error)
-      }
-    }
-    fetchData()
+    dispatch(initializeAnecdotes())
   }, [dispatch])
 
   return (
