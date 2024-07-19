@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch } from 'react-redux'
+import { Route, Routes } from 'react-router-dom'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -7,6 +8,8 @@ import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
+import UserList from './components/UserList'
+import Navigation from './components/Navigation'
 import { setNotificationWithTimeout } from './reducers/notificationReducer'
 
 const App = () => {
@@ -108,6 +111,20 @@ const App = () => {
     }
   }
 
+  const BlogsList = () => (
+    <div>
+      {blogs.map(blog => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          updateBlogList={handleLike}
+          removeBlog={handleRemove}
+          currentUser={user}
+        />
+      ))}
+    </div>
+  )
+
   if (user === null) {
     return (
       <div>
@@ -128,28 +145,19 @@ const App = () => {
 
   return (
     <div>
+      <Navigation user={user} handleLogout={handleLogout} />
       <h2>blogs</h2>
       <Notification />
-
-      <div style={userInfoStyle}>
-        <p style={userNameStyle}>{user.name} logged-in</p>
-        <button onClick={handleLogout}>logout</button>
-      </div>
 
       <div style={togglableStyle}>
         <Togglable buttonLabel="create new blog" ref={togglableRef}>
           <BlogForm createBlog={addBlog} />
         </Togglable>
       </div>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          updateBlogList={handleLike}
-          removeBlog={handleRemove}
-          currentUser={user}
-        />
-      ))}
+      <Routes>
+        <Route path="/" element={<BlogsList />} />
+        <Route path="/users" element={<UserList />} />
+      </Routes>
     </div>
   )
 }
