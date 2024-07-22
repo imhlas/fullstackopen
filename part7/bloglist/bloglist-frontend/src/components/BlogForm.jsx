@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TextField, Button, Box, Typography } from '@mui/material'
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
@@ -18,45 +19,57 @@ const BlogForm = ({ createBlog }) => {
   }
 
   return (
-    <div>
-      <h2>create new</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          title:
-          <input
-            id="title"
-            type="text"
-            placeholder="enter blog title"
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-        <div>
-          author:
-          <input
-            id="author"
-            type="text"
-            placeholder="enter blog author"
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-        <div>
-          url:
-          <input
-            id="url"
-            type="text"
-            placeholder="enter blog url"
-            value={url}
-            onChange={({ target }) => setUrl(target.value)}
-          />
-        </div>
-        <button id="create-button" type="submit">
-          create
-        </button>
-      </form>
-    </div>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+        maxWidth: 400,
+        margin: 'auto',
+        padding: 3,
+        border: '1px solid #ccc',
+        borderRadius: 1,
+        boxShadow: 1,
+      }}
+    >
+      <Typography variant="h4" component="h2" gutterBottom>
+        Blogs
+      </Typography>
+      <TextField
+        label="Title"
+        variant="outlined"
+        fullWidth
+        value={title}
+        onChange={({ target }) => setTitle(target.value)}
+      />
+      <TextField
+        label="Author"
+        variant="outlined"
+        fullWidth
+        value={author}
+        onChange={({ target }) => setAuthor(target.value)}
+      />
+      <TextField
+        label="URL"
+        variant="outlined"
+        fullWidth
+        value={url}
+        onChange={({ target }) => setUrl(target.value)}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        type="submit"
+        fullWidth
+      >
+        Create
+      </Button>
+    </Box>
   )
 }
+
 
 export default BlogForm

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Route, Routes } from 'react-router-dom'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
@@ -10,16 +10,20 @@ import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import UserList from './components/UserList'
 import Navigation from './components/Navigation'
+import User from './components/User'
+import BlogDetail from './components/BlogDetail'
 import { setNotificationWithTimeout } from './reducers/notificationReducer'
+import { initializeBlogs, createBlog, handleLike, handleRemove } from './reducers/blogReducer'
+import { Typography, Container } from '@mui/material'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
   const dispatch = useDispatch()
   const togglableRef = useRef()
+  const blogs = useSelector(state => state.blogs)
 
   const userInfoStyle = {
     display: 'flex',
@@ -36,11 +40,8 @@ const App = () => {
   }
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
-      setBlogs(sortedBlogs)
-    })
-  }, [])
+    dispatch(initializeBlogs())
+  }, [dispatch])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -75,60 +76,37 @@ const App = () => {
 
   const addBlog = async (blogObject) => {
     try {
-      const newBlog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(newBlog))
-      dispatch(setNotificationWithTimeout({ type: 'success', text: `a new blog ${newBlog.title} by ${newBlog.author} added` }, 5))
+      dispatch(createBlog(blogObject))
+      dispatch(setNotificationWithTimeout({ type: 'success', text: `a new blog ${blogObject.title} by ${blogObject.author} added` }, 5))
       togglableRef.current.toggleVisibility()
     } catch (exception) {
       dispatch(setNotificationWithTimeout({ type: 'error', text: 'Error adding blog' }, 5))
     }
   }
 
-  const handleLike = async (id, updatedBlogData) => {
-    try {
-      const returnedBlog = await blogService.update(id, updatedBlogData)
-      const originalBlog = blogs.find((blog) => blog.id === id)
-
-      const updatedBlog = { ...returnedBlog, user: originalBlog.user }
-
-      const updatedBlogs = blogs
-        .map((blog) => (blog.id !== id ? blog : updatedBlog))
-        .sort((a, b) => b.likes - a.likes)
-
-      setBlogs(updatedBlogs)
-    } catch (exception) {
-      dispatch(setNotificationWithTimeout({ type: 'error', text: 'Error updating blog' }, 5))
-    }
-  }
-
-  const handleRemove = async (id) => {
-    try {
-      await blogService.remove(id)
-      const updatedBlogs = blogs.filter((blog) => blog.id !== id)
-      setBlogs(updatedBlogs)
-    } catch (exception) {
-      dispatch(setNotificationWithTimeout({ type: 'error', text: 'Error removing blog' }, 5))
-    }
-  }
-
   const BlogsList = () => (
-    <div>
+    <Container>
+      <Typography variant="h4" component="h2" gutterBottom>
+        Blogs
+      </Typography>
       {blogs.map(blog => (
         <Blog
           key={blog.id}
           blog={blog}
-          updateBlogList={handleLike}
-          removeBlog={handleRemove}
+          updateBlogList={() => dispatch(handleLike(blog.id, { ...blog, likes: blog.likes + 1 }))}
+          removeBlog={() => dispatch(handleRemove(blog.id))}
           currentUser={user}
         />
       ))}
-    </div>
+    </Container>
   )
 
   if (user === null) {
     return (
-      <div>
-        <h2>Log in to application</h2>
+      <Container>
+        <Typography variant="h4" component="h2" gutterBottom>
+          Log in to application
+        </Typography>
         <Notification />
         <Togglable buttonLabel="login" ref={togglableRef}>
           <LoginForm
@@ -139,14 +117,13 @@ const App = () => {
             handleSubmit={handleLogin}
           />
         </Togglable>
-      </div>
+      </Container>
     )
   }
 
   return (
-    <div>
+    <Container>
       <Navigation user={user} handleLogout={handleLogout} />
-      <h2>blogs</h2>
       <Notification />
 
       <div style={togglableStyle}>
@@ -157,8 +134,10 @@ const App = () => {
       <Routes>
         <Route path="/" element={<BlogsList />} />
         <Route path="/users" element={<UserList />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/blogs/:id" element={<BlogDetail />} />
       </Routes>
-    </div>
+    </Container>
   )
 }
 

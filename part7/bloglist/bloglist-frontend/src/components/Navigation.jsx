@@ -1,28 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 
 const Navigation = ({ user, handleLogout }) => {
-  const navStyle = {
-    backgroundColor: 'lightgrey',
-    padding: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  }
-
-  const linkStyle = {
-    marginRight: '10px'
-  }
-
   return (
-    <div style={navStyle}>
-      <div>
-        <Link to="/" style={linkStyle}>Home</Link>
-        <Link to="/users" style={linkStyle}>Users</Link>
-        {user.name} logged in
-        <button onClick={handleLogout}>logout</button>
-      </div>
-    </div>
+    <AppBar position="static" sx={{ mb: 2 }}>
+      <Toolbar>
+        <Box sx={{ flexGrow: 1 }}>
+          <Button component={Link} to="/" color="inherit">Home</Button>
+          <Button component={Link} to="/users" color="inherit">Users</Button>
+        </Box>
+        <Typography variant="h6" component="div" sx={{ mr: 2 }}>
+          {user.name} logged in
+        </Typography>
+        <Button color="inherit" onClick={handleLogout}>Logout</Button>
+      </Toolbar>
+    </AppBar>
   )
 }
 
